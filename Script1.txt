@@ -1,0 +1,49 @@
+function highlightMissingFiles() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  var sourceFolderId = 'Enter Your URL'; // Replace with your source folder ID
+
+  // Get the list of file names in Google Drive
+  var fileNamesInDrive = getFileNamesInDrive(sourceFolderId);
+
+  // Loop through the data
+  for (var i = 0; i < data.length; i++) {
+    var fileName = data[i][0]; // Assuming the file names are in the first column
+
+    // Check if the file name is not found in Google Drive
+    if (fileNamesInDrive.indexOf(fileName) === -1) {
+      // Highlight the row with a color (e.g., yellow)
+      sheet.getRange(i + 1, 1, 1, data[i].length).setBackground('yellow');
+    }
+  }
+}
+
+function getFileNamesInDrive(folderId) {
+  var fileNames = [];
+  var sourceFolder = DriveApp.getFolderById(folderId);
+  var allFiles = getAllFilesInFolder(sourceFolder);
+
+  for (var j = 0; j < allFiles.length; j++) {
+    fileNames.push(allFiles[j].getName());
+  }
+
+  return fileNames;
+}
+
+// Recursive function to get all files in a folder and its subfolders
+function getAllFilesInFolder(folder) {
+  var files = [];
+  var folders = folder.getFolders();
+
+  while (folders.hasNext()) {
+    var subfolder = folders.next();
+    files = files.concat(getAllFilesInFolder(subfolder));
+  }
+
+  var folderFiles = folder.getFiles();
+  while (folderFiles.hasNext()) {
+    files.push(folderFiles.next());
+  }
+
+  return files;
+}
